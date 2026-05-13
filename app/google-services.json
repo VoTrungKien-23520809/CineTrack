@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "215618826589",
+    "project_id": "cinetrack-7ccb7",
+    "storage_bucket": "cinetrack-7ccb7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:215618826589:android:3cf517908cd626019e38b4",
+        "android_client_info": {
+          "package_name": "com.kienvo.cinetrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "215618826589-7n7pm23qe17tbrku8lmari89ih0spuli.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kienvo.cinetrack",
+            "certificate_hash": "0f793e726722a03832da7efa3d4ea6379ed15118"
+          }
+        },
+        {
+          "client_id": "215618826589-equ9n5c7m7kqapkr2p0k1njtfe3j8si2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyColMNdRbWI2dGEgsfGPs2TP4Ooq-Zn2B8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "215618826589-b9389sk5v2id7kcleb1g9f8k4sr3f398.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
