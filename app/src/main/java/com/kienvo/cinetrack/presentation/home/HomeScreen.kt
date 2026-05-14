@@ -1,5 +1,6 @@
 package com.kienvo.cinetrack.presentation.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -25,13 +28,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 // Composable function: Hàm vẽ giao diện.
 // Học thuật: Jetpack Compose sử dụng mô hình Declarative UI (Giao diện khai báo), giao diện được vẽ dựa trên trạng thái (State) hiện tại.
@@ -108,32 +115,67 @@ fun MovieCard(movie: Movie, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        Column {
-            // AsyncImage: Tự động tải ảnh từ mạng qua thư viện Coil, có tích hợp sẵn cache ảnh.
+        Box {
+            // Poster
             AsyncImage(
                 model = movie.fullPosterUrl(),
                 contentDescription = movie.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    // Tỉ lệ khung hình chuẩn của Poster phim là 2:3
                     .aspectRatio(2f / 3f),
-                contentScale = ContentScale.Crop // Cắt cúp ảnh cho vừa vặn khung hình
+                contentScale = ContentScale.Crop
             )
-            Column(Modifier.padding(8.dp)) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+
+            // Gradient overlay phía dưới
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.85f)
+                            )
+                        )
+                    )
+            )
+
+            // Rating badge góc trên phải
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = Color.Black.copy(alpha = 0.7f)
+            ) {
                 Text(
                     text = "⭐ ${movie.formattedRating()}",
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = CinemaGold,
+                    fontWeight = FontWeight.Bold
                 )
             }
+
+            // Tên phim overlay phía dưới poster
+            Text(
+                text = movie.title,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(10.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -2,26 +2,29 @@ package com.kienvo.cinetrack.presentation.detail
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,136 +35,215 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(movieId) {
-        viewModel.loadDetail(movieId)
-    }
+    LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(uiState.movie?.title ?: "") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+    when {
+        uiState.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+            CircularProgressIndicator()
         }
-    ) { padding ->
-        when {
-            uiState.isLoading -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
-
-            uiState.error != null -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { Text("Lỗi: ${uiState.error}") }
-
-            uiState.movie != null -> {
-                val movie = uiState.movie!!
+        uiState.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+            Text("Lỗi: ${uiState.error}")
+        }
+        uiState.movie != null -> {
+            val movie = uiState.movie!!
+            Box(Modifier.fillMaxSize()) {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .padding(padding)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Backdrop image
-                    AsyncImage(
-                        model = movie.fullBackdropUrl(),
-                        contentDescription = null,
+                    // ── Hero section ──────────────────────────────
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(220.dp),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Column(Modifier.padding(16.dp)) {
-                        // Title + Rating
-                        Text(
-                            text = movie.title,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
+                            .height(320.dp)
+                    ) {
+                        // Backdrop
+                        AsyncImage(
+                            model = movie.fullBackdropUrl(),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                        Spacer(Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "⭐ ${movie.formattedRating()}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = "📅 ${movie.releaseDate}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
 
-                        Spacer(Modifier.height(16.dp))
+                        // Gradient bottom
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Black.copy(alpha = 0.3f),
+                                            Color.Transparent,
+                                            MaterialTheme.colorScheme.background
+                                        )
+                                    )
+                                )
+                        )
 
-                        // Action buttons
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // Nút Watchlist với animation màu
-                            val bookmarkColor by animateColorAsState(
-                                targetValue = if (uiState.isInWatchlist)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.onSurface,
-                                animationSpec = spring(),
-                                label = "bookmark_color"
-                            )
-                            FilledTonalButton(
-                                onClick = { viewModel.toggleWatchlist() },
-                                modifier = Modifier.weight(1f)
+                        // Back button
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                                .statusBarsPadding()
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color.Black.copy(alpha = 0.5f)
                             ) {
                                 Icon(
-                                    imageVector = if (uiState.isInWatchlist)
-                                        Icons.Filled.Bookmark
-                                    else
-                                        Icons.Outlined.BookmarkBorder,
-                                    contentDescription = null,
-                                    tint = bookmarkColor
+                                    Icons.Default.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Color.White,
+                                    modifier = Modifier.padding(8.dp)
                                 )
-                                Spacer(Modifier.width(6.dp))
-                                Text(if (uiState.isInWatchlist) "Đã lưu" else "Lưu lại")
+                            }
+                        }
+                    }
+
+                    // ── Content section ───────────────────────────
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        // Title
+                        Text(
+                            text = movie.title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 32.sp
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        // Meta row
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Rating chip
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = CinemaGold.copy(alpha = 0.15f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = CinemaGold,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = movie.formattedRating(),
+                                        color = CinemaGold,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
 
-                            // Nút Đã xem
-                            FilledTonalButton(
+                            // Year chip
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                Text(
+                                    text = movie.releaseDate.take(4),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+
+                        // ── Action buttons ────────────────────────
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // Watchlist button
+                            val isInWatchlist = uiState.isInWatchlist
+                            Button(
+                                onClick = { viewModel.toggleWatchlist() },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (isInWatchlist)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = if (isInWatchlist)
+                                        Color.White
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                shape = RoundedCornerShape(14.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isInWatchlist)
+                                        Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    if (isInWatchlist) "Đã lưu" else "Lưu lại",
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            // Watched button
+                            Button(
                                 onClick = { viewModel.toggleWatched() },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (uiState.isWatched)
+                                        Color(0xFF1DB954)
+                                    else
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = if (uiState.isWatched)
+                                        Color.White
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                shape = RoundedCornerShape(14.dp)
                             ) {
                                 Icon(
                                     imageVector = if (uiState.isWatched)
-                                        Icons.Filled.CheckCircle
-                                    else
-                                        Icons.Outlined.CheckCircle,
-                                    contentDescription = null
+                                        Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(Modifier.width(6.dp))
-                                Text(if (uiState.isWatched) "Đã xem" else "Chưa xem")
+                                Text(
+                                    if (uiState.isWatched) "Đã xem" else "Chưa xem",
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                         }
 
-                        Spacer(Modifier.height(16.dp))
-                        HorizontalDivider()
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(24.dp))
 
-                        // Overview
+                        // ── Overview ──────────────────────────────
                         Text(
                             text = "Nội dung phim",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = movie.overview.ifEmpty { "Chưa có mô tả." },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+                            lineHeight = 24.sp
                         )
+
+                        Spacer(Modifier.height(32.dp))
                     }
                 }
             }

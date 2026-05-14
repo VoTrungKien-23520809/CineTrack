@@ -3,8 +3,10 @@ package com.kienvo.cinetrack.presentation.watchlist
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 @Composable
 fun WatchlistScreen(
@@ -80,48 +83,89 @@ fun WatchlistMovieCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        Row(
-            Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Poster nhỏ
+        Row(Modifier.padding(12.dp)) {
+            // Poster
             AsyncImage(
                 model = movie.fullPosterUrl(),
                 contentDescription = null,
                 modifier = Modifier
-                    .width(60.dp)
-                    .height(90.dp)
-                    .clip(MaterialTheme.shapes.small),
+                    .width(70.dp)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp)),
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(14.dp))
 
             // Info
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "⭐ ${movie.formattedRating()}  •  ${movie.releaseDate.take(4)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = movie.title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = movie.overview,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Rating + Year row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = CinemaGold,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = movie.formattedRating(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = CinemaGold,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "•",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = movie.releaseDate.take(4),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            // Nút xóa
-            IconButton(onClick = onDelete) {
+            // Delete button
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            ) {
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Xóa",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                 )
             }
         }
