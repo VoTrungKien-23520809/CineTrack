@@ -104,4 +104,6 @@ dependencies {
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.0.0")
+
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.0")
 }

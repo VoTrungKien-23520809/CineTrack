@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +17,7 @@ import com.kienvo.cinetrack.presentation.detail.DetailScreen
 import com.kienvo.cinetrack.presentation.home.HomeScreen
 import com.kienvo.cinetrack.presentation.login.LoginScreen
 import com.kienvo.cinetrack.presentation.profile.ProfileScreen
+import com.kienvo.cinetrack.presentation.search.SearchScreen
 import com.kienvo.cinetrack.presentation.watchlist.WatchlistScreen
 
 @Composable
@@ -27,7 +29,9 @@ fun AppNavigation(
     val startDestination = if (isLoggedIn) "home" else "login"
 
     val currentRoute by navController.currentBackStackEntryAsState()
-    val showBottomBar = currentRoute?.destination?.route in listOf("home", "watchlist", "profile")
+    // showBottomBar
+    val showBottomBar = currentRoute?.destination?.route in
+            listOf("home", "search", "watchlist", "profile")
 
     Scaffold(
         modifier = modifier,
@@ -44,6 +48,18 @@ fun AppNavigation(
                         },
                         icon = { Icon(Icons.Default.Home, null) },
                         label = { Text("Khám phá") }
+                    )
+                    // NavigationBar — thêm item Search giữa Home và Watchlist
+                    NavigationBarItem(
+                        selected = currentRoute?.destination?.route == "search",
+                        onClick = {
+                            navController.navigate("search") {
+                                launchSingleTop = true
+                                popUpTo("home")
+                            }
+                        },
+                        icon = { Icon(Icons.Default.Search, null) },
+                        label = { Text("Tìm kiếm") }
                     )
                     NavigationBarItem(
                         selected = currentRoute?.destination?.route == "watchlist",
@@ -108,6 +124,9 @@ fun AppNavigation(
                         }
                     }
                 )
+            }
+            composable("search") {
+                SearchScreen(onMovieClick = { navController.navigate("detail/$it") })
             }
         }
     }
