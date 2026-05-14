@@ -1,6 +1,7 @@
 package com.kienvo.cinetrack.data.repository
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
 import com.kienvo.cinetrack.data.local.CineTrackDatabase
 import com.kienvo.cinetrack.data.local.entity.MovieEntity
 import com.kienvo.cinetrack.data.local.entity.toDomain
@@ -17,20 +18,18 @@ import kotlinx.coroutines.flow.map
 // Đời thường: Đây là gã "thủ kho/quản lý nhà kho". Khi ai đó ra lệnh "lấy danh sách phim cho tôi", gã sẽ biết phải chạy đi gọi Shipper (mạng) hay mở tủ (Database) để lấy đồ. Mọi người không cần tự làm mấy việc đấy.
 class MovieRepositoryImpl(context: Context) : MovieRepository {
 
-    // Lấy công cụ gọi mạng (API)
     private val api = RetrofitInstance.api
-
-    // Lazy: Khởi tạo biến này lần đầu tiên được dùng (trì hoãn khởi tạo). Đây là cách giấu API Key qua helper.
     private val apiKey by lazy { ApiKeyProvider.getApiKey(context) }
-
-    // Lấy công cụ thao tác Database (DAO)
     private val dao = CineTrackDatabase.getInstance(context).movieDao()
     private val firestoreRepo = FirestoreWatchlistRepository()
 
-    // Lấy dữ liệu qua mạng với khối 'runCatching' (Tương tự try-catch).
-    // Nếu block mã chạy bị lỗi (như rớt mạng, mất mạng), nó không sập app mà sẽ trả về một Result.failure() chứa Exception.
+    // Lấy userId hiện tại — throw nếu chưa login
+    private val currentUserId: String
+        get() = FirebaseAuth.getInstance().currentUser?.uid
+            ?: throw Exception("Chưa đăng nhập")
+
+    // ── API ──────────────────────────────────────────
     override suspend fun getPopularMovies(): Result<List<Movie>> = runCatching {
-        // Gắn DTO (mạng) map thành Domain (nội bộ app) trước khi trả về.
         api.getPopularMovies(apiKey).results.map { it.toDomain() }
     }
 
@@ -42,33 +41,30 @@ class MovieRepositoryImpl(context: Context) : MovieRepository {
         api.getMovieDetail(id, apiKey).toDomain()
     }
 
-
-    // Các hàm tương tác với Local Database (Sử dụng Kotlin Flow)
-    // Học thuật: Flow là Reactive Stream (Luồng dữ liệu phản ứng). Nó "mở một cái ống nước" nối từ Database lên bề mặt. Cứ Database thay đổi lập tức ống nước sẽ tự chảy data mới lên mà không cần gọi lại.
+    // ── Watchlist (Room + Firestore) ─────────────────
     override fun getWatchlist(): Flow<List<Movie>> =
-        // Lấy danh sách kiểu MovieEntity từ DAO, biến đổi (map) dần thành danh sách Movie (Domain model)
-        dao.getAllWatchlist().map { list -> list.map { it.toDomain() } }
+        dao.getAllWatchlist(currentUserId).map { list -> list.map { it.toDomain() } }
 
     override fun getWantToWatch(): Flow<List<Movie>> =
-        dao.getWantToWatch().map { list -> list.map { it.toDomain() } }
+        dao.getWantToWatch(currentUserId).map { list -> list.map { it.toDomain() } }
 
     override fun getWatched(): Flow<List<Movie>> =
-        dao.getWatched().map { list -> list.map { it.toDomain() } }
+        dao.getWatched(currentUserId).map { list -> list.map { it.toDomain() } }
 
     override fun isInWatchlist(movieId: Int): Flow<Boolean> =
-        dao.isInWatchlist(movieId)
+        dao.isInWatchlist(currentUserId, movieId)
 
-    // Các hàm Ghi / Xoá vào Database. Cần dùng suspend fun vì chúng thực thi I/O (Input/Output).
     override suspend fun addToWatchlist(movie: Movie) {
-        dao.insertMovie(movie.toEntity())
-        firestoreRepo.syncToFirestore(movie) // sync lên cloud
+        dao.insertMovie(movie.toEntity(userId = currentUserId))
+        firestoreRepo.syncToFirestore(movie)
     }
 
     override suspend fun removeFromWatchlist(movie: Movie) {
-        dao.deleteMovie(movie.toEntity())
-        firestoreRepo.removeFromFirestore(movie.id) // xóa trên cloud
+        // Cần tìm đúng entity theo userId + movieId để xóa
+        dao.deleteMovie(movie.toEntity(userId = currentUserId))
+        firestoreRepo.removeFromFirestore(movie.id)
     }
 
     override suspend fun markAsWatched(movieId: Int, isWatched: Boolean) =
-        dao.updateWatchedStatus(movieId, isWatched)
+        dao.updateWatchedStatus(currentUserId, movieId, isWatched)
 }

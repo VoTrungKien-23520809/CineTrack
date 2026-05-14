@@ -11,7 +11,7 @@ import com.kienvo.cinetrack.data.local.entity.MovieEntity
 // - entities: Danh sách các bảng (table) sẽ có trong database này. VD: MovieEntity đại diện cho bảng watchlist.
 // - version: Phiên bản cấu trúc của Database. Nếu sau này bạn thêm cột mới, phải tăng version lên và viết hàm Migration.
 // - exportSchema: Đặt false để bỏ qua việc xuất file JSON mô tả lược đồ data ra bộ nhớ (thường chỉ set true cho dự án lớn cần kiểm soát lược đồ chặt chẽ qua git).
-@Database(entities = [MovieEntity::class], version = 1, exportSchema = false)
+@Database(entities = [MovieEntity::class], version = 2, exportSchema = false)
 abstract class CineTrackDatabase : RoomDatabase() {
 
     // Khai báo DAO để các phần khác của ứng dụng có thể lấy "thực thể người phục vụ" để kết nối với bảng chứa phim.
@@ -34,7 +34,9 @@ abstract class CineTrackDatabase : RoomDatabase() {
                     context.applicationContext,
                     CineTrackDatabase::class.java,
                     "cinetrack_db"
-                ).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
             }
         }
     }

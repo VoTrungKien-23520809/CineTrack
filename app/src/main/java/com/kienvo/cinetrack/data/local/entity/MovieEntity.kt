@@ -10,24 +10,16 @@ import com.kienvo.cinetrack.domain.model.Movie
 // Đời thường: Đây là chiếc hộp nhựa (dữ liệu thô) để cất vào ngăn tủ (database) trong nhà bạn. Tủ này tên là "watchlist".
 @Entity(tableName = "watchlist")
 data class MovieEntity(
-    // Khoá chính (Primary Key).
-    // Học thuật: Mọi dòng dữ liệu (Row) trong cơ sở dữ liệu quan hệ (RDBMS) cần một ID duy nhất để phân biệt, truy vấn và tránh trùng lặp.
-    @PrimaryKey val id: Int,
-
-    // Các cột (Columns) lưu thông tin tương ứng.
+    @PrimaryKey(autoGenerate = true) val localId: Int = 0,
+    val userId: String,           // thêm field này
+    val id: Int,
     val title: String,
     val overview: String,
     val posterPath: String?,
     val backdropPath: String?,
     val voteAverage: Double,
     val releaseDate: String,
-
-    // Trạng thái theo dõi phim đã xem hay chưa.
-    // Học thuật: Dữ liệu Boolean trong SQLite thường lưu dưới dạng Integer (0 hoặc 1). Room sẽ tự cast (chuyển đổi) ngầm định.
     val isWatched: Boolean = false,
-
-    // Thời điểm người dùng thêm phim vào database (dùng để sắp xếp danh sách).
-    // Timestamp lưu dưới dạng Long (milliseconds) rất chuẩn xác và tiện lợi.
     val addedAt: Long = System.currentTimeMillis()
 )
 
@@ -40,9 +32,8 @@ fun MovieEntity.toDomain() = Movie(
     voteAverage = voteAverage, releaseDate = releaseDate
 )
 
-// Mapper function: Đóng vai trò đóng gói Domain Model thành dạng Entity để lưu vào Database.
-// Truyền thêm cờ (flag) `isWatched` để gán trạng thái cụ thể khi thao tác insert/update.
-fun Movie.toEntity(isWatched: Boolean = false) = MovieEntity(
+fun Movie.toEntity(userId: String, isWatched: Boolean = false) = MovieEntity(
+    userId = userId,   // thêm userId
     id = id, title = title, overview = overview,
     posterPath = posterPath, backdropPath = backdropPath,
     voteAverage = voteAverage, releaseDate = releaseDate,
