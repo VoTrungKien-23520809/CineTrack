@@ -13,9 +13,6 @@ import com.kienvo.cinetrack.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// Repository Implementation (Cài đặt): Lớp "tổng quản" đứng ra điều phối việc kết nối Database (Room) và Mạng (Retrofit).
-// Học thuật: Triển khai theo Repository Pattern. Nó giấu đi (abstract) việc lấy data từ nguồn nào (Local hay Remote), để ViewModel phía trên gọi là có xài ngay, không cần quan tâm chi tiết.
-// Đời thường: Đây là gã "thủ kho/quản lý nhà kho". Khi ai đó ra lệnh "lấy danh sách phim cho tôi", gã sẽ biết phải chạy đi gọi Shipper (mạng) hay mở tủ (Database) để lấy đồ. Mọi người không cần tự làm mấy việc đấy.
 class MovieRepositoryImpl(context: Context) : MovieRepository {
 
     private val api = RetrofitInstance.api
@@ -23,7 +20,6 @@ class MovieRepositoryImpl(context: Context) : MovieRepository {
     private val dao = CineTrackDatabase.getInstance(context).movieDao()
     private val firestoreRepo = FirestoreWatchlistRepository()
 
-    // Lấy userId hiện tại — throw nếu chưa login
     private val currentUserId: String
         get() = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw Exception("Chưa đăng nhập")

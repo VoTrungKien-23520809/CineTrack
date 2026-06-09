@@ -8,9 +8,6 @@ import androidx.room.Query
 import com.kienvo.cinetrack.data.local.entity.MovieEntity
 import kotlinx.coroutines.flow.Flow
 
-// DAO (Data Access Object): Interface định nghĩa các phương thức để thao tác với cơ sở dữ liệu.
-// Học thuật: DAO nằm ở tầng Data Layer, đóng vai trò như một cầu nối giữa mã Kotlin và SQLite. Room sẽ tự động sinh code thực thi (Implementation) cho các hàm này lúc compile.
-// Đời thường: Đây là "người thủ thư" trong thư viện (database) cục bộ của bạn. Bạn không cần tự trèo lên lấy sách, chỉ cần đưa yêu cầu cho thủ thư (như "Thêm sách", "Tìm sách"), họ sẽ làm thay bạn.
 @Dao
 interface MovieDao {
 
