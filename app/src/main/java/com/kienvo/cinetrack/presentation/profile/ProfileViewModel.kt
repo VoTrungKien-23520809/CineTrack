@@ -4,17 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kienvo.cinetrack.domain.model.User
 import com.kienvo.cinetrack.domain.repository.AuthRepository
+import com.kienvo.cinetrack.domain.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    movieRepository: MovieRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -22,6 +25,20 @@ class ProfileViewModel @Inject constructor(
 
     init {
         _uiState.update { it.copy(user = authRepository.getCurrentUser()) }
+
+        // Đếm số phim muốn xem / đã xem để hiển thị thống kê
+        viewModelScope.launch {
+            combine(
+                movieRepository.getWantToWatch(),
+                movieRepository.getWatched()
+            ) { wantToWatch, watched ->
+                wantToWatch.size to watched.size
+            }.collect { (wantCount, watchedCount) ->
+                _uiState.update {
+                    it.copy(wantToWatchCount = wantCount, watchedCount = watchedCount)
+                }
+            }
+        }
     }
 
     fun signOut() {
@@ -34,5 +51,7 @@ class ProfileViewModel @Inject constructor(
 
 data class ProfileUiState(
     val user: User? = null,
+    val wantToWatchCount: Int = 0,
+    val watchedCount: Int = 0,
     val isLoggedOut: Boolean = false
 )
