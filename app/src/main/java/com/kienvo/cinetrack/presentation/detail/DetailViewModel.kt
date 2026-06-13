@@ -2,7 +2,7 @@ package com.kienvo.cinetrack.presentation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.domain.model.MovieDetail
 import com.kienvo.cinetrack.domain.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -63,7 +63,7 @@ class DetailViewModel @Inject constructor(
     }
 
     fun toggleWatchlist() {
-        val movie = _uiState.value.movie ?: return
+        val movie = _uiState.value.movie?.toMovie() ?: return
         viewModelScope.launch {
             if (_uiState.value.isInWatchlist) {
                 repository.removeFromWatchlist(movie)
@@ -74,7 +74,7 @@ class DetailViewModel @Inject constructor(
     }
 
     fun toggleWatched() {
-        val movie = _uiState.value.movie ?: return
+        val movie = _uiState.value.movie?.toMovie() ?: return
         val currentlyWatched = _uiState.value.isWatched
         viewModelScope.launch {
             if (!_uiState.value.isInWatchlist) {
@@ -89,7 +89,7 @@ class DetailViewModel @Inject constructor(
 
 data class DetailUiState(
     val isLoading: Boolean = false,
-    val movie: Movie? = null,
+    val movie: MovieDetail? = null,
     val isInWatchlist: Boolean = false,
     val isWatched: Boolean = false,
     val error: String? = null

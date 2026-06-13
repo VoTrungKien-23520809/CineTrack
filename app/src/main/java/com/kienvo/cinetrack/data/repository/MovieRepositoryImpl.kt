@@ -6,6 +6,7 @@ import com.kienvo.cinetrack.data.local.entity.toDomain
 import com.kienvo.cinetrack.data.local.entity.toEntity
 import com.kienvo.cinetrack.data.remote.TmdbApiService
 import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.domain.model.MovieDetail
 import com.kienvo.cinetrack.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -31,8 +32,8 @@ class MovieRepositoryImpl @Inject constructor(
         api.getTopRatedMovies().results.map { it.toDomain() }
     }
 
-    override suspend fun getMovieDetail(id: Int): Result<Movie> = runCatching {
-        api.getMovieDetail(id).toDomain()
+    override suspend fun getMovieDetail(id: Int): Result<MovieDetail> = runCatching {
+        api.getMovieDetail(id).toDetailDomain()
     }
 
     override suspend fun searchMovies(query: String): Result<List<Movie>> = runCatching {

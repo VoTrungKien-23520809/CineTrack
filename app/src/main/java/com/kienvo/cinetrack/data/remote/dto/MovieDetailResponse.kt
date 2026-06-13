@@ -1,7 +1,7 @@
 package com.kienvo.cinetrack.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.domain.model.MovieDetail
 
 
 data class MovieDetailResponse(
@@ -15,13 +15,18 @@ data class MovieDetailResponse(
 
     val runtime: Int?,
 
-
-    val genres: List<GenreDto>
+    val genres: List<GenreDto> = emptyList()
 ) {
-    fun toDomain() = Movie(
-        id = id, title = title, overview = overview,
-        posterPath = posterPath, backdropPath = backdropPath,
-        voteAverage = voteAverage, releaseDate = releaseDate
+    fun toDetailDomain() = MovieDetail(
+        id = id,
+        title = title,
+        overview = overview,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        voteAverage = voteAverage,
+        releaseDate = releaseDate,
+        runtime = runtime,
+        genres = genres.map { it.name }
     )
 }
 

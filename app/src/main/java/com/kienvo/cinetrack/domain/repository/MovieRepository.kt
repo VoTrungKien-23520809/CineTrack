@@ -1,12 +1,13 @@
 package com.kienvo.cinetrack.domain.repository
 
 import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.domain.model.MovieDetail
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
     suspend fun getPopularMovies(): Result<List<Movie>>
     suspend fun getTopRatedMovies(): Result<List<Movie>>
-    suspend fun getMovieDetail(id: Int): Result<Movie>
+    suspend fun getMovieDetail(id: Int): Result<MovieDetail>
     suspend fun searchMovies(query: String): Result<List<Movie>>
     fun getWatchlist(): Flow<List<Movie>>
     fun getWantToWatch(): Flow<List<Movie>>
