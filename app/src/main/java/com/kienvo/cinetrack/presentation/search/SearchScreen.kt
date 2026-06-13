@@ -13,15 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kienvo.cinetrack.presentation.components.ShimmerMovieGrid
 import com.kienvo.cinetrack.presentation.home.MovieCard
 
 @Composable
 fun SearchScreen(
     onMovieClick: (Int) -> Unit,
-    viewModel: SearchViewModel = viewModel()
+    viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
@@ -31,7 +31,7 @@ fun SearchScreen(
         // Search bar
         OutlinedTextField(
             value = query,
-            onValueChange = { viewModel.query.value = it },
+            onValueChange = { viewModel.onQueryChanged(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
@@ -39,7 +39,7 @@ fun SearchScreen(
             leadingIcon = { Icon(Icons.Default.Search, null) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    IconButton(onClick = { viewModel.query.value = "" }) {
+                    IconButton(onClick = { viewModel.onQueryChanged("") }) {
                         Icon(Icons.Default.Clear, null)
                     }
                 }

@@ -10,9 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.google.firebase.auth.FirebaseAuth
 import com.kienvo.cinetrack.presentation.detail.DetailScreen
 import com.kienvo.cinetrack.presentation.home.HomeScreen
 import com.kienvo.cinetrack.presentation.login.LoginScreen
@@ -23,10 +23,10 @@ import com.kienvo.cinetrack.presentation.watchlist.WatchlistScreen
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    appViewModel: AppViewModel = hiltViewModel()
 ) {
-    val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
-    val startDestination = if (isLoggedIn) "home" else "login"
+    val startDestination = if (appViewModel.isLoggedIn) "home" else "login"
 
     val currentRoute by navController.currentBackStackEntryAsState()
     // showBottomBar
@@ -109,7 +109,7 @@ fun AppNavigation(
                 WatchlistScreen(onMovieClick = { navController.navigate("detail/$it") })
             }
             composable("detail/{movieId}") { backStack ->
-                val movieId = backStack.arguments?.getString("movieId")?.toInt()
+                val movieId = backStack.arguments?.getString("movieId")?.toIntOrNull()
                     ?: return@composable
                 DetailScreen(
                     movieId = movieId,

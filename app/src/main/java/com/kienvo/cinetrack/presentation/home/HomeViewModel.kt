@@ -1,22 +1,21 @@
 package com.kienvo.cinetrack.presentation.home
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kienvo.cinetrack.data.repository.MovieRepositoryImpl
 import com.kienvo.cinetrack.domain.model.Movie
 import com.kienvo.cinetrack.domain.repository.MovieRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: MovieRepository =
-        MovieRepositoryImpl(application.applicationContext)
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: MovieRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -32,12 +31,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val popular = repository.getPopularMovies()
             val topRated = repository.getTopRatedMovies()
 
+            // Combine errors from both calls
+            val error = popular.exceptionOrNull()?.message
+                ?: topRated.exceptionOrNull()?.message
+
             _uiState.update {
                 it.copy(
                     isLoading = false,
                     popularMovies = popular.getOrElse { emptyList() },
                     topRatedMovies = topRated.getOrElse { emptyList() },
-                    error = popular.exceptionOrNull()?.message
+                    error = error
                 )
             }
         }

@@ -1,17 +1,16 @@
 package com.kienvo.cinetrack.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kienvo.cinetrack.domain.model.Movie
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class FirestoreWatchlistRepository {
-
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+class FirestoreWatchlistRepository @Inject constructor(
+    private val db: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) {
 
     private fun watchlistRef() = auth.currentUser?.uid?.let { uid ->
         db.collection("users").document(uid).collection("watchlist")
@@ -19,7 +18,12 @@ class FirestoreWatchlistRepository {
 
     // Sync lên Firestore khi thêm vào watchlist
     suspend fun syncToFirestore(movie: Movie, isWatched: Boolean = false) {
-        watchlistRef()?.document(movie.id.toString())?.set(
+        val ref = watchlistRef()
+        if (ref == null) {
+            Log.w("FirestoreWatchlist", "Cannot sync: user not logged in")
+            return
+        }
+        ref.document(movie.id.toString()).set(
             mapOf(
                 "id" to movie.id,
                 "title" to movie.title,
@@ -29,32 +33,16 @@ class FirestoreWatchlistRepository {
                 "isWatched" to isWatched,
                 "addedAt" to System.currentTimeMillis()
             )
-        )?.await()
+        ).await()
     }
 
     // Xóa khỏi Firestore
     suspend fun removeFromFirestore(movieId: Int) {
-        watchlistRef()?.document(movieId.toString())?.delete()?.await()
-    }
-
-    // Observe watchlist realtime từ Firestore
-    fun observeWatchlist(): Flow<List<Map<String, Any>>> = callbackFlow {
         val ref = watchlistRef()
         if (ref == null) {
-            trySend(emptyList())
-            close()
-            return@callbackFlow
+            Log.w("FirestoreWatchlist", "Cannot remove: user not logged in")
+            return
         }
-
-        val listener = ref.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-            val list = snapshot?.documents?.mapNotNull { it.data } ?: emptyList()
-            trySend(list)
-        }
-
-        awaitClose { listener.remove() }
+        ref.document(movieId.toString()).delete().await()
     }
 }

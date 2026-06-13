@@ -1,13 +1,15 @@
 package com.kienvo.cinetrack.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.Index
 import com.kienvo.cinetrack.domain.model.Movie
 
-
-@Entity(tableName = "watchlist")
+@Entity(
+    tableName = "watchlist",
+    primaryKeys = ["userId", "id"],
+    indices = [Index(value = ["userId", "id"], unique = true)]
+)
 data class MovieEntity(
-    @PrimaryKey(autoGenerate = true) val localId: Int = 0,
     val userId: String,
     val id: Int,
     val title: String,
@@ -27,7 +29,7 @@ fun MovieEntity.toDomain() = Movie(
 )
 
 fun Movie.toEntity(userId: String, isWatched: Boolean = false) = MovieEntity(
-    userId = userId,   // thêm userId
+    userId = userId,
     id = id, title = title, overview = overview,
     posterPath = posterPath, backdropPath = backdropPath,
     voteAverage = voteAverage, releaseDate = releaseDate,

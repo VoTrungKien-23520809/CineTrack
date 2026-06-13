@@ -1,12 +1,12 @@
 package com.kienvo.cinetrack.domain.repository
 
-import com.google.firebase.auth.FirebaseUser
+import com.kienvo.cinetrack.domain.model.User
 
 interface AuthRepository {
-    fun getCurrentUser(): FirebaseUser?
+    fun getCurrentUser(): User?
     fun isLoggedIn(): Boolean
-    suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser>
-    suspend fun signInWithEmail(email: String, password: String): Result<FirebaseUser>
-    suspend fun registerWithEmail(email: String, password: String, displayName: String): Result<FirebaseUser>
+    suspend fun signInWithGoogle(idToken: String): Result<User>
+    suspend fun signInWithEmail(email: String, password: String): Result<User>
+    suspend fun registerWithEmail(email: String, password: String, displayName: String): Result<User>
     suspend fun signOut()
 }

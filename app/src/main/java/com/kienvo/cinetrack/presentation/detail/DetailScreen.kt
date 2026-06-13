@@ -21,8 +21,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
@@ -31,9 +31,10 @@ import com.kienvo.cinetrack.ui.theme.CinemaGold
 fun DetailScreen(
     movieId: Int,
     onBack: () -> Unit,
-    viewModel: DetailViewModel = viewModel()
+    viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val movie = uiState.movie
 
     LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
@@ -44,8 +45,7 @@ fun DetailScreen(
         uiState.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
             Text("Lỗi: ${uiState.error}")
         }
-        uiState.movie != null -> {
-            val movie = uiState.movie!!
+        movie != null -> {
             Box(Modifier.fillMaxSize()) {
                 Column(
                     Modifier

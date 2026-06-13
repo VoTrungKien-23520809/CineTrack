@@ -4,35 +4,39 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.kienvo.cinetrack.domain.model.User
 import com.kienvo.cinetrack.domain.repository.AuthRepository
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl @Inject constructor(
+    private val auth: FirebaseAuth
+) : AuthRepository {
 
-    private val auth = FirebaseAuth.getInstance()
-
-    override fun getCurrentUser(): FirebaseUser? = auth.currentUser
+    override fun getCurrentUser(): User? = auth.currentUser?.toDomain()
     override fun isLoggedIn(): Boolean = auth.currentUser != null
 
-    override suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser> = runCatching {
+    override suspend fun signInWithGoogle(idToken: String): Result<User> = runCatching {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential).await().user
+        val user = auth.signInWithCredential(credential).await().user
             ?: throw Exception("Đăng nhập thất bại")
+        user.toDomain()
     }
 
     override suspend fun signInWithEmail(
         email: String,
         password: String
-    ): Result<FirebaseUser> = runCatching {
-        auth.signInWithEmailAndPassword(email, password).await().user
+    ): Result<User> = runCatching {
+        val user = auth.signInWithEmailAndPassword(email, password).await().user
             ?: throw Exception("Đăng nhập thất bại")
+        user.toDomain()
     }
 
     override suspend fun registerWithEmail(
         email: String,
         password: String,
         displayName: String
-    ): Result<FirebaseUser> = runCatching {
+    ): Result<User> = runCatching {
         val result = auth.createUserWithEmailAndPassword(email, password).await()
         val user = result.user ?: throw Exception("Đăng ký thất bại")
 
@@ -41,8 +45,16 @@ class AuthRepositoryImpl : AuthRepository {
             .setDisplayName(displayName)
             .build()
         user.updateProfile(profileUpdate).await()
-        user
+        user.toDomain()
     }
 
     override suspend fun signOut() = auth.signOut()
 }
+
+private fun FirebaseUser.toDomain() = User(
+    uid = uid,
+    displayName = displayName,
+    email = email,
+    photoUrl = photoUrl?.toString(),
+    providerId = providerData.firstOrNull { it.providerId != "firebase" }?.providerId
+)

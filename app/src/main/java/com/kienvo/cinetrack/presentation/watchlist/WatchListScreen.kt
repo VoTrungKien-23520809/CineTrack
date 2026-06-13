@@ -16,8 +16,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.Movie
 import com.kienvo.cinetrack.ui.theme.CinemaGold
@@ -25,7 +25,7 @@ import com.kienvo.cinetrack.ui.theme.CinemaGold
 @Composable
 fun WatchlistScreen(
     onMovieClick: (Int) -> Unit,
-    viewModel: WatchlistViewModel = viewModel()
+    viewModel: WatchlistViewModel = hiltViewModel()
 ) {
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val wantToWatch by viewModel.wantToWatch.collectAsStateWithLifecycle()

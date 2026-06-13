@@ -1,7 +1,6 @@
 package com.kienvo.cinetrack.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -26,8 +25,8 @@ interface MovieDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMovie(movie: MovieEntity)
 
-    @Delete
-    suspend fun deleteMovie(movie: MovieEntity)
+    @Query("DELETE FROM watchlist WHERE userId = :userId AND id = :movieId")
+    suspend fun deleteMovie(userId: String, movieId: Int)
 
     @Query("UPDATE watchlist SET isWatched = :isWatched WHERE userId = :userId AND id = :movieId")
     suspend fun updateWatchedStatus(userId: String, movieId: Int, isWatched: Boolean)
