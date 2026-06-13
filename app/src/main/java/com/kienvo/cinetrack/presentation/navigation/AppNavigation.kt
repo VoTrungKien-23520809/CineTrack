@@ -113,7 +113,8 @@ fun AppNavigation(
                     ?: return@composable
                 DetailScreen(
                     movieId = movieId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onMovieClick = { navController.navigate("detail/$it") }
                 )
             }
             composable("profile") {

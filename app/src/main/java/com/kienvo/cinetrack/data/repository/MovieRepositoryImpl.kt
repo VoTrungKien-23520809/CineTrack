@@ -5,8 +5,10 @@ import com.kienvo.cinetrack.data.local.dao.MovieDao
 import com.kienvo.cinetrack.data.local.entity.toDomain
 import com.kienvo.cinetrack.data.local.entity.toEntity
 import com.kienvo.cinetrack.data.remote.TmdbApiService
+import com.kienvo.cinetrack.domain.model.CastMember
 import com.kienvo.cinetrack.domain.model.Movie
 import com.kienvo.cinetrack.domain.model.MovieDetail
+import com.kienvo.cinetrack.domain.model.Video
 import com.kienvo.cinetrack.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -38,6 +40,18 @@ class MovieRepositoryImpl @Inject constructor(
 
     override suspend fun searchMovies(query: String): Result<List<Movie>> = runCatching {
         api.searchMovies(query).results.map { it.toDomain() }
+    }
+
+    override suspend fun getMovieCredits(id: Int): Result<List<CastMember>> = runCatching {
+        api.getMovieCredits(id).cast.map { it.toDomain() }
+    }
+
+    override suspend fun getMovieVideos(id: Int): Result<List<Video>> = runCatching {
+        api.getMovieVideos(id).results.map { it.toDomain() }
+    }
+
+    override suspend fun getRecommendations(id: Int): Result<List<Movie>> = runCatching {
+        api.getRecommendations(id).results.map { it.toDomain() }
     }
 
     // Watchlist (Room + Firestore)

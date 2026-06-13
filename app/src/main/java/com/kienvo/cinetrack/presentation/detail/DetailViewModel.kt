@@ -2,6 +2,8 @@ package com.kienvo.cinetrack.presentation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kienvo.cinetrack.domain.model.CastMember
+import com.kienvo.cinetrack.domain.model.Movie
 import com.kienvo.cinetrack.domain.model.MovieDetail
 import com.kienvo.cinetrack.domain.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +46,23 @@ class DetailViewModel @Inject constructor(
             }
         }
 
-        // 2. Quan sát trạng thái watchlist
+        // 2. Tải dữ liệu phụ (cast, trailer, phim đề xuất) — best-effort, không chặn UI chính
+        viewModelScope.launch {
+            val cast = repository.getMovieCredits(movieId).getOrDefault(emptyList())
+            _uiState.update { it.copy(cast = cast) }
+        }
+        viewModelScope.launch {
+            val videos = repository.getMovieVideos(movieId).getOrDefault(emptyList())
+            val trailer = videos.firstOrNull { it.isYoutube && it.type.equals("Trailer", true) }
+                ?: videos.firstOrNull { it.isYoutube }
+            _uiState.update { it.copy(trailerKey = trailer?.key) }
+        }
+        viewModelScope.launch {
+            val recommendations = repository.getRecommendations(movieId).getOrDefault(emptyList())
+            _uiState.update { it.copy(recommendations = recommendations) }
+        }
+
+        // 3. Quan sát trạng thái watchlist
         observeJob = viewModelScope.launch {
             launch {
                 repository.isInWatchlist(movieId).collect { inWatchlist ->
@@ -90,5 +108,8 @@ data class DetailUiState(
     val movie: MovieDetail? = null,
     val isInWatchlist: Boolean = false,
     val isWatched: Boolean = false,
+    val cast: List<CastMember> = emptyList(),
+    val trailerKey: String? = null,
+    val recommendations: List<Movie> = emptyList(),
     val error: String? = null
 )
