@@ -34,26 +34,33 @@ class SearchViewModel @Inject constructor(
             _query
                 .debounce(500)
                 .distinctUntilChanged()
-                .collectLatest { q ->
-                    if (q.isBlank()) {
-                        _uiState.update { it.copy(results = emptyList(), isLoading = false, error = null) }
-                        return@collectLatest
-                    }
-                    _uiState.update { it.copy(isLoading = true, error = null) }
-                    repository.searchMovies(q).fold(
-                        onSuccess = { movies ->
-                            _uiState.update { it.copy(isLoading = false, results = movies) }
-                        },
-                        onFailure = { e ->
-                            _uiState.update { it.copy(isLoading = false, error = e.message) }
-                        }
-                    )
-                }
+                .collectLatest { q -> runSearch(q) }
         }
+    }
+
+    private suspend fun runSearch(query: String) {
+        if (query.isBlank()) {
+            _uiState.update { it.copy(results = emptyList(), isLoading = false, error = null) }
+            return
+        }
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        repository.searchMovies(query).fold(
+            onSuccess = { movies ->
+                _uiState.update { it.copy(isLoading = false, results = movies) }
+            },
+            onFailure = { e ->
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        )
     }
 
     fun onQueryChanged(value: String) {
         _query.value = value
+    }
+
+    // Chạy lại tìm kiếm với query hiện tại (dùng cho nút "Thử lại")
+    fun retry() {
+        viewModelScope.launch { runSearch(_query.value) }
     }
 }
 

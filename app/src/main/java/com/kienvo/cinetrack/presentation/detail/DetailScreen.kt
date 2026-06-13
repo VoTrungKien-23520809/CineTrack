@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.kienvo.cinetrack.presentation.components.ErrorView
+import com.kienvo.cinetrack.presentation.components.LoadingView
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -39,12 +41,11 @@ fun DetailScreen(
     LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
     when {
-        uiState.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        uiState.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-            Text("Lỗi: ${uiState.error}")
-        }
+        uiState.isLoading -> LoadingView()
+        uiState.error != null -> ErrorView(
+            message = "Lỗi: ${uiState.error}",
+            onRetry = { viewModel.loadDetail(movieId) }
+        )
         movie != null -> {
             Box(Modifier.fillMaxSize()) {
                 Column(

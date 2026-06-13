@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kienvo.cinetrack.presentation.components.ErrorView
 import com.kienvo.cinetrack.presentation.components.ShimmerMovieGrid
 import com.kienvo.cinetrack.presentation.home.MovieCard
 
@@ -61,6 +62,10 @@ fun SearchScreen(
                 }
             }
             uiState.isLoading -> ShimmerMovieGrid()
+            uiState.error != null -> ErrorView(
+                message = uiState.error!!,
+                onRetry = { viewModel.retry() }
+            )
             uiState.results.isEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(

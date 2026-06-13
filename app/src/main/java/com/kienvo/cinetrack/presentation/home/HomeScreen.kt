@@ -42,6 +42,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.Movie
+import com.kienvo.cinetrack.presentation.components.ErrorView
+import com.kienvo.cinetrack.presentation.components.LoadingView
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 
@@ -67,10 +69,8 @@ fun HomeScreen(
         }
 
         when {
-            uiState.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            uiState.error != null -> ErrorView(uiState.error!!) { viewModel.loadMovies() }
+            uiState.isLoading -> LoadingView()
+            uiState.error != null -> ErrorView(uiState.error!!, onRetry = { viewModel.loadMovies() })
             else -> {
                 val movies = if (selectedTab == 0) uiState.popularMovies else uiState.topRatedMovies
                 MovieGrid(movies = movies, onMovieClick = onMovieClick)
@@ -79,25 +79,6 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun ErrorView(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = message,
-            color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(onClick = onRetry) {
-            Text("Thử lại")
-        }
-    }
-}
 @Composable
 fun MovieGrid(movies: List<Movie>, onMovieClick: (Int) -> Unit) {
     LazyVerticalGrid(
