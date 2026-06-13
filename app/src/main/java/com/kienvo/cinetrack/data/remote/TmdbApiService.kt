@@ -7,8 +7,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface TmdbApiService {
-
-
     @GET("movie/popular")
     suspend fun getPopularMovies(
         @Query("api_key") apiKey: String,

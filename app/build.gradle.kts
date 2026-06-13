@@ -92,7 +92,6 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Room Database - Đã sửa lại để gọi thẳng từ file libs.versions.toml
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler) // Dùng ksp và xóa dòng annotationProcessor cũ

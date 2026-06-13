@@ -8,7 +8,7 @@ import com.kienvo.cinetrack.domain.model.Movie
 @Entity(tableName = "watchlist")
 data class MovieEntity(
     @PrimaryKey(autoGenerate = true) val localId: Int = 0,
-    val userId: String,           // thêm field này
+    val userId: String,
     val id: Int,
     val title: String,
     val overview: String,

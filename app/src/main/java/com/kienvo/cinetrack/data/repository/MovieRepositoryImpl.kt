@@ -24,7 +24,7 @@ class MovieRepositoryImpl(context: Context) : MovieRepository {
         get() = FirebaseAuth.getInstance().currentUser?.uid
             ?: throw Exception("Chưa đăng nhập")
 
-    // ── API ──────────────────────────────────────────
+    // API
     override suspend fun getPopularMovies(): Result<List<Movie>> = runCatching {
         api.getPopularMovies(apiKey).results.map { it.toDomain() }
     }
@@ -37,7 +37,7 @@ class MovieRepositoryImpl(context: Context) : MovieRepository {
         api.getMovieDetail(id, apiKey).toDomain()
     }
 
-    // ── Watchlist (Room + Firestore) ─────────────────
+    // Watchlist (Room + Firestore)
     override fun getWatchlist(): Flow<List<Movie>> =
         dao.getAllWatchlist(currentUserId).map { list -> list.map { it.toDomain() } }
 
