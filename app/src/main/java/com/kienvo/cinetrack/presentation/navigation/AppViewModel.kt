@@ -10,6 +10,5 @@ class AppViewModel @Inject constructor(
     authRepository: AuthRepository
 ) : ViewModel() {
 
-    // Trạng thái đăng nhập lúc app khởi động — quyết định màn hình bắt đầu
     val isLoggedIn: Boolean = authRepository.isLoggedIn()
 }

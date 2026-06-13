@@ -53,7 +53,6 @@ fun DetailScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // ── Hero section ──────────────────────────────
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -104,7 +103,7 @@ fun DetailScreen(
                         }
                     }
 
-                    // ── Content section ───────────────────────────
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -280,7 +279,6 @@ fun DetailScreen(
 
                         Spacer(Modifier.height(24.dp))
 
-                        // ── Overview ──────────────────────────────
                         Text(
                             text = "Nội dung phim",
                             style = MaterialTheme.typography.titleMedium,

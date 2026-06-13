@@ -26,7 +26,6 @@ class ProfileViewModel @Inject constructor(
     init {
         _uiState.update { it.copy(user = authRepository.getCurrentUser()) }
 
-        // Đếm số phim muốn xem / đã xem để hiển thị thống kê
         viewModelScope.launch {
             combine(
                 movieRepository.getWantToWatch(),

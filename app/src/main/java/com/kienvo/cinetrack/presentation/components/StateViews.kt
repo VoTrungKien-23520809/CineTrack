@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-/** Trạng thái lỗi dùng chung: thông báo + nút "Thử lại" (tuỳ chọn). */
 @Composable
 fun ErrorView(
     message: String,
@@ -44,7 +43,6 @@ fun ErrorView(
     }
 }
 
-/** Trạng thái loading dùng chung: spinner căn giữa. */
 @Composable
 fun LoadingView(modifier: Modifier = Modifier) {
     Box(

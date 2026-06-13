@@ -15,14 +15,13 @@ data class MovieDetail(
     fun fullBackdropUrl() = "https://image.tmdb.org/t/p/w780$backdropPath"
     fun formattedRating() = String.format("%.1f", voteAverage)
 
-    // "2h 14m" / "45m" — null nếu API không trả runtime
+    // "2h 14m" / "45m"
     fun formattedRuntime(): String? = runtime?.takeIf { it > 0 }?.let { total ->
         val hours = total / 60
         val minutes = total % 60
         if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
 
-    // Dùng cho thao tác watchlist (Room/Firestore chỉ cần Movie cơ bản)
     fun toMovie() = Movie(
         id = id,
         title = title,

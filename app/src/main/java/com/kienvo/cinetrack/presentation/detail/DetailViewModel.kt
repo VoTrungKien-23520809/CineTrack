@@ -21,11 +21,9 @@ class DetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
-    // Tracks the Flow collectors so we cancel them khi loadDetail được gọi lại
     private var observeJob: Job? = null
 
     fun loadDetail(movieId: Int) {
-        // Huỷ collectors cũ để tránh leak khi movieId đổi
         observeJob?.cancel()
 
         // 1. Gọi API lấy chi tiết phim (one-shot, không collect)
@@ -46,7 +44,7 @@ class DetailViewModel @Inject constructor(
             }
         }
 
-        // 2. Quan sát trạng thái watchlist / đã xem trong 1 job riêng có thể huỷ
+        // 2. Quan sát trạng thái watchlist
         observeJob = viewModelScope.launch {
             launch {
                 repository.isInWatchlist(movieId).collect { inWatchlist ->
