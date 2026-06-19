@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,6 +28,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +40,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,9 +57,24 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Phổ biến", "Top rated")
+
+    val gridState = rememberLazyGridState()
+    val endReached by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = gridState.layoutInfo.totalItemsCount
+            total > 0 && lastVisible >= total - 4
+        }
+    }
+
+    LaunchedEffect(endReached) {
+        if (endReached) {
+            if (selectedTab == 0) viewModel.loadMorePopular()
+            else viewModel.loadMoreTopRated()
+        }
+    }
 
     Column {
         TabRow(selectedTabIndex = selectedTab) {
@@ -73,22 +92,46 @@ fun HomeScreen(
             uiState.error != null -> ErrorView(uiState.error!!, onRetry = { viewModel.loadMovies() })
             else -> {
                 val movies = if (selectedTab == 0) uiState.popularMovies else uiState.topRatedMovies
-                MovieGrid(movies = movies, onMovieClick = onMovieClick)
+                val isLoadingMore = if (selectedTab == 0) uiState.isLoadingMorePopular else uiState.isLoadingMoreTopRated
+                MovieGrid(
+                    movies = movies,
+                    onMovieClick = onMovieClick,
+                    isLoadingMore = isLoadingMore,
+                    state = gridState
+                )
             }
         }
     }
 }
 
 @Composable
-fun MovieGrid(movies: List<Movie>, onMovieClick: (Int) -> Unit) {
+fun MovieGrid(
+    movies: List<Movie>,
+    onMovieClick: (Int) -> Unit,
+    isLoadingMore: Boolean = false,
+    state: LazyGridState = rememberLazyGridState()
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
+        state = state,
         contentPadding = PaddingValues(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(movies, key = { it.id }) { movie ->
             MovieCard(movie = movie, onClick = { onMovieClick(movie.id) })
+        }
+        if (isLoadingMore) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                }
+            }
         }
     }
 }

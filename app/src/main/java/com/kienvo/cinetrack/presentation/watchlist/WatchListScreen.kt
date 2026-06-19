@@ -2,6 +2,7 @@ package com.kienvo.cinetrack.presentation.watchlist
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,10 +32,10 @@ fun WatchlistScreen(
     val wantToWatch by viewModel.wantToWatch.collectAsStateWithLifecycle()
     val watched by viewModel.watched.collectAsStateWithLifecycle()
     val pendingDeleteMovie by viewModel.pendingDeleteMovie.collectAsStateWithLifecycle()
+    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Khi có phim pending delete → show snackbar; kết quả quyết định undo hay confirm
     LaunchedEffect(pendingDeleteMovie) {
         val movie = pendingDeleteMovie ?: return@LaunchedEffect
         val result = snackbarHostState.showSnackbar(
@@ -67,6 +68,20 @@ fun WatchlistScreen(
                         selected = selectedTab == index,
                         onClick = { viewModel.selectTab(index) },
                         text = { Text(title) }
+                    )
+                }
+            }
+
+            // Sort chips
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(SortOption.entries) { option ->
+                    FilterChip(
+                        selected = sortBy == option,
+                        onClick = { viewModel.setSortOption(option) },
+                        label = { Text(option.label) }
                     )
                 }
             }
@@ -168,15 +183,24 @@ fun WatchlistMovieCard(
                         color = CinemaGold,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        text = "•",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("•", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         text = movie.releaseDate.take(4),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    // Hiện sao người dùng đánh giá nếu có
+                    movie.userRating?.let { rating ->
+                        Text("•", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        repeat(rating) {
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                 }
             }
 

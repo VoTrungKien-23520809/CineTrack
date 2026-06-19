@@ -26,7 +26,8 @@ interface TmdbApiService {
 
     @GET("search/movie")
     suspend fun searchMovies(
-        @Query("query") query: String
+        @Query("query") query: String,
+        @Query("page") page: Int = 1
     ): MovieListResponse
 
     @GET("movie/{id}/credits")

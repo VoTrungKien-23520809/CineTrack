@@ -2,8 +2,10 @@ package com.kienvo.cinetrack.presentation.search
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -27,9 +29,20 @@ fun SearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
 
-    Column(Modifier.fillMaxSize()) {
+    val gridState = rememberLazyGridState()
+    val endReached by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = gridState.layoutInfo.totalItemsCount
+            total > 0 && lastVisible >= total - 4
+        }
+    }
 
-        // Search bar
+    LaunchedEffect(endReached) {
+        if (endReached) viewModel.loadMore()
+    }
+
+    Column(Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = query,
             onValueChange = { viewModel.onQueryChanged(it) },
@@ -51,7 +64,6 @@ fun SearchScreen(
 
         when {
             query.isBlank() -> {
-                // Trạng thái mặc định
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         "🎬\nGõ tên phim để tìm kiếm",
@@ -77,12 +89,25 @@ fun SearchScreen(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
+                    state = gridState,
                     contentPadding = PaddingValues(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.results, key = { it.id }) { movie ->
                         MovieCard(movie = movie, onClick = { onMovieClick(movie.id) })
+                    }
+                    if (uiState.isLoadingMore) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                            }
+                        }
                     }
                 }
             }

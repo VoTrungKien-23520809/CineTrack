@@ -19,13 +19,16 @@ data class MovieEntity(
     val voteAverage: Double,
     val releaseDate: String,
     val isWatched: Boolean = false,
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = System.currentTimeMillis(),
+    val userRating: Int? = null,
+    val note: String? = null
 )
 
 fun MovieEntity.toDomain() = Movie(
     id = id, title = title, overview = overview,
     posterPath = posterPath, backdropPath = backdropPath,
-    voteAverage = voteAverage, releaseDate = releaseDate
+    voteAverage = voteAverage, releaseDate = releaseDate,
+    userRating = userRating, userNote = note
 )
 
 fun Movie.toEntity(userId: String, isWatched: Boolean = false) = MovieEntity(
@@ -33,5 +36,6 @@ fun Movie.toEntity(userId: String, isWatched: Boolean = false) = MovieEntity(
     id = id, title = title, overview = overview,
     posterPath = posterPath, backdropPath = backdropPath,
     voteAverage = voteAverage, releaseDate = releaseDate,
-    isWatched = isWatched
+    isWatched = isWatched,
+    userRating = userRating, note = userNote
 )

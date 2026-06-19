@@ -3,6 +3,7 @@ package com.kienvo.cinetrack.data.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.kienvo.cinetrack.domain.model.Movie
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -33,6 +34,14 @@ class FirestoreWatchlistRepository @Inject constructor(
                 "isWatched" to isWatched,
                 "addedAt" to System.currentTimeMillis()
             )
+        ).await()
+    }
+
+    suspend fun syncRatingAndNote(movieId: Int, rating: Int?, note: String?) {
+        val ref = watchlistRef() ?: return
+        ref.document(movieId.toString()).set(
+            mapOf("userRating" to rating, "note" to note),
+            SetOptions.merge()
         ).await()
     }
 

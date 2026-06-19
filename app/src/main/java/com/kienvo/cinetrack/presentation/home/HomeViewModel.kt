@@ -20,18 +20,22 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private var popularPage = 1
+    private var topRatedPage = 1
+
     init {
         loadMovies()
     }
 
     fun loadMovies() {
+        popularPage = 1
+        topRatedPage = 1
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val popular = repository.getPopularMovies()
-            val topRated = repository.getTopRatedMovies()
+            val popular = repository.getPopularMovies(page = 1)
+            val topRated = repository.getTopRatedMovies(page = 1)
 
-            // Combine errors from both calls
             val error = popular.exceptionOrNull()?.message
                 ?: topRated.exceptionOrNull()?.message
 
@@ -45,11 +49,43 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun loadMorePopular() {
+        if (_uiState.value.isLoadingMorePopular) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMorePopular = true) }
+            popularPage++
+            val more = repository.getPopularMovies(popularPage).getOrElse { emptyList() }
+            _uiState.update {
+                it.copy(
+                    isLoadingMorePopular = false,
+                    popularMovies = it.popularMovies + more
+                )
+            }
+        }
+    }
+
+    fun loadMoreTopRated() {
+        if (_uiState.value.isLoadingMoreTopRated) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMoreTopRated = true) }
+            topRatedPage++
+            val more = repository.getTopRatedMovies(topRatedPage).getOrElse { emptyList() }
+            _uiState.update {
+                it.copy(
+                    isLoadingMoreTopRated = false,
+                    topRatedMovies = it.topRatedMovies + more
+                )
+            }
+        }
+    }
 }
 
 data class HomeUiState(
     val isLoading: Boolean = false,
     val popularMovies: List<Movie> = emptyList(),
     val topRatedMovies: List<Movie> = emptyList(),
+    val isLoadingMorePopular: Boolean = false,
+    val isLoadingMoreTopRated: Boolean = false,
     val error: String? = null
 )

@@ -49,6 +49,8 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val movie = uiState.movie
     val context = LocalContext.current
+    val draftRating = uiState.draftRating
+    val draftNote = uiState.draftNote
 
     LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
@@ -331,6 +333,54 @@ fun DetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 24.sp
                         )
+
+                        // ── Đánh giá & ghi chú (chỉ hiện khi đã xem) ────
+                        if (uiState.isWatched) {
+                            Spacer(Modifier.height(24.dp))
+                            Text(
+                                text = "Đánh giá của bạn",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                (1..5).forEach { star ->
+                                    IconButton(
+                                        onClick = { viewModel.setDraftRating(star) },
+                                        modifier = Modifier.size(40.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = "$star sao",
+                                            tint = if (draftRating != null && star <= draftRating)
+                                                CinemaGold
+                                            else
+                                                MaterialTheme.colorScheme.outline,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = draftNote,
+                                onValueChange = { viewModel.setDraftNote(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Ghi chú của bạn") },
+                                placeholder = { Text("Cảm nhận về bộ phim...") },
+                                minLines = 2,
+                                maxLines = 4,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { viewModel.saveRatingAndNote() },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp)
+                            ) {
+                                Text("Lưu đánh giá", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
 
                         // ── Diễn viên ─────────────────────────────
                         if (uiState.cast.isNotEmpty()) {

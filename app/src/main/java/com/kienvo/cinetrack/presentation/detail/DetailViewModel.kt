@@ -24,11 +24,12 @@ class DetailViewModel @Inject constructor(
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     private var observeJob: Job? = null
+    private var draftInitialized = false
 
     fun loadDetail(movieId: Int) {
         observeJob?.cancel()
+        draftInitialized = false
 
-        // 1. Gọi API lấy chi tiết phim (one-shot, không collect)
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
@@ -40,13 +41,10 @@ class DetailViewModel @Inject constructor(
                     it.copy(isLoading = false, error = result.exceptionOrNull()?.message)
                 }
             } else {
-                _uiState.update {
-                    it.copy(isLoading = false, movie = movie, error = null)
-                }
+                _uiState.update { it.copy(isLoading = false, movie = movie, error = null) }
             }
         }
 
-        // 2. Tải dữ liệu phụ (cast, trailer, phim đề xuất) — best-effort, không chặn UI chính
         viewModelScope.launch {
             val cast = repository.getMovieCredits(movieId).getOrDefault(emptyList())
             _uiState.update { it.copy(cast = cast) }
@@ -62,7 +60,6 @@ class DetailViewModel @Inject constructor(
             _uiState.update { it.copy(recommendations = recommendations) }
         }
 
-        // 3. Quan sát trạng thái watchlist
         observeJob = viewModelScope.launch {
             launch {
                 repository.isInWatchlist(movieId).collect { inWatchlist ->
@@ -73,6 +70,19 @@ class DetailViewModel @Inject constructor(
                 repository.getWatched().collect { watchedMovies ->
                     val isWatched = watchedMovies.any { it.id == movieId }
                     _uiState.update { it.copy(isWatched = isWatched) }
+                }
+            }
+            launch {
+                repository.getWatchlistEntry(movieId).collect { entry ->
+                    if (!draftInitialized && entry != null) {
+                        _uiState.update {
+                            it.copy(
+                                draftRating = entry.userRating,
+                                draftNote = entry.userNote ?: ""
+                            )
+                        }
+                        draftInitialized = true
+                    }
                 }
             }
         }
@@ -97,8 +107,27 @@ class DetailViewModel @Inject constructor(
                 repository.addToWatchlist(movie)
             }
             repository.markAsWatched(movie.id, !currentlyWatched)
-
             _uiState.update { it.copy(isWatched = !currentlyWatched, isInWatchlist = true) }
+        }
+    }
+
+    fun setDraftRating(rating: Int) {
+        val newRating = if (_uiState.value.draftRating == rating) null else rating
+        _uiState.update { it.copy(draftRating = newRating) }
+    }
+
+    fun setDraftNote(note: String) {
+        _uiState.update { it.copy(draftNote = note) }
+    }
+
+    fun saveRatingAndNote() {
+        val movieId = _uiState.value.movie?.id ?: return
+        viewModelScope.launch {
+            repository.updateRatingAndNote(
+                movieId = movieId,
+                rating = _uiState.value.draftRating,
+                note = _uiState.value.draftNote.trim().ifEmpty { null }
+            )
         }
     }
 }
@@ -111,5 +140,7 @@ data class DetailUiState(
     val cast: List<CastMember> = emptyList(),
     val trailerKey: String? = null,
     val recommendations: List<Movie> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val draftRating: Int? = null,
+    val draftNote: String = ""
 )

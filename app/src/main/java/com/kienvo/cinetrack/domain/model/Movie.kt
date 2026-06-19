@@ -7,7 +7,9 @@ data class Movie(
     val posterPath: String?,
     val backdropPath: String?,
     val voteAverage: Double,
-    val releaseDate: String
+    val releaseDate: String,
+    val userRating: Int? = null,
+    val userNote: String? = null
 ) {
     fun fullPosterUrl() = "https://image.tmdb.org/t/p/w500$posterPath"
     fun fullBackdropUrl() = "https://image.tmdb.org/t/p/w780$backdropPath"

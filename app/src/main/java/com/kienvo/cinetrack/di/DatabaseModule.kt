@@ -23,7 +23,7 @@ object DatabaseModule {
             CineTrackDatabase::class.java,
             "cinetrack_db"
         )
-            .fallbackToDestructiveMigration()
+            .addMigrations(CineTrackDatabase.MIGRATION_3_4)
             .build()
 
     @Provides

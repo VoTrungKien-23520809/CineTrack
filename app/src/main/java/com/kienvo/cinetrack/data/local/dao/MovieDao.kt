@@ -30,4 +30,10 @@ interface MovieDao {
 
     @Query("UPDATE watchlist SET isWatched = :isWatched WHERE userId = :userId AND id = :movieId")
     suspend fun updateWatchedStatus(userId: String, movieId: Int, isWatched: Boolean)
+
+    @Query("SELECT * FROM watchlist WHERE userId = :userId AND id = :movieId LIMIT 1")
+    fun getMovieEntry(userId: String, movieId: Int): Flow<MovieEntity?>
+
+    @Query("UPDATE watchlist SET userRating = :rating, note = :note WHERE userId = :userId AND id = :movieId")
+    suspend fun updateRatingAndNote(userId: String, movieId: Int, rating: Int?, note: String?)
 }

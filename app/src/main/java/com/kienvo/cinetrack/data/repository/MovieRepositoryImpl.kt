@@ -26,20 +26,20 @@ class MovieRepositoryImpl @Inject constructor(
         get() = auth.currentUser?.uid
 
     // API
-    override suspend fun getPopularMovies(): Result<List<Movie>> = runCatching {
-        api.getPopularMovies().results.map { it.toDomain() }
+    override suspend fun getPopularMovies(page: Int): Result<List<Movie>> = runCatching {
+        api.getPopularMovies(page).results.map { it.toDomain() }
     }
 
-    override suspend fun getTopRatedMovies(): Result<List<Movie>> = runCatching {
-        api.getTopRatedMovies().results.map { it.toDomain() }
+    override suspend fun getTopRatedMovies(page: Int): Result<List<Movie>> = runCatching {
+        api.getTopRatedMovies(page).results.map { it.toDomain() }
     }
 
     override suspend fun getMovieDetail(id: Int): Result<MovieDetail> = runCatching {
         api.getMovieDetail(id).toDetailDomain()
     }
 
-    override suspend fun searchMovies(query: String): Result<List<Movie>> = runCatching {
-        api.searchMovies(query).results.map { it.toDomain() }
+    override suspend fun searchMovies(query: String, page: Int): Result<List<Movie>> = runCatching {
+        api.searchMovies(query, page).results.map { it.toDomain() }
     }
 
     override suspend fun getMovieCredits(id: Int): Result<List<CastMember>> = runCatching {
@@ -75,13 +75,17 @@ class MovieRepositoryImpl @Inject constructor(
         return dao.isInWatchlist(uid, movieId)
     }
 
+    override fun getWatchlistEntry(movieId: Int): Flow<Movie?> {
+        val uid = currentUserId ?: return emptyFlow()
+        return dao.getMovieEntry(uid, movieId).map { it?.toDomain() }
+    }
+
     override suspend fun addToWatchlist(movie: Movie) {
         val uid = currentUserId ?: return
         dao.insertMovie(movie.toEntity(userId = uid))
         try {
             firestoreRepo.syncToFirestore(movie)
         } catch (e: Exception) {
-            // Firestore sync failed — local data is saved, cloud sync will be retried later
             android.util.Log.w("MovieRepo", "Firestore sync failed", e)
         }
     }
@@ -99,5 +103,15 @@ class MovieRepositoryImpl @Inject constructor(
     override suspend fun markAsWatched(movieId: Int, isWatched: Boolean) {
         val uid = currentUserId ?: return
         dao.updateWatchedStatus(uid, movieId, isWatched)
+    }
+
+    override suspend fun updateRatingAndNote(movieId: Int, rating: Int?, note: String?) {
+        val uid = currentUserId ?: return
+        dao.updateRatingAndNote(uid, movieId, rating, note)
+        try {
+            firestoreRepo.syncRatingAndNote(movieId, rating, note)
+        } catch (e: Exception) {
+            android.util.Log.w("MovieRepo", "Firestore rating sync failed", e)
+        }
     }
 }
