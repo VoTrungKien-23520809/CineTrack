@@ -32,10 +32,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.kienvo.cinetrack.domain.model.CastMember
+import com.kienvo.cinetrack.presentation.components.CastCard
 import com.kienvo.cinetrack.presentation.components.ErrorView
+import com.kienvo.cinetrack.presentation.components.MovieCard
+import com.kienvo.cinetrack.presentation.components.RatingAndNoteSection
 import com.kienvo.cinetrack.presentation.components.ShimmerDetailView
-import com.kienvo.cinetrack.presentation.home.MovieCard
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -337,49 +338,13 @@ fun DetailScreen(
                         // ── Đánh giá & ghi chú (chỉ hiện khi đã xem) ────
                         if (uiState.isWatched) {
                             Spacer(Modifier.height(24.dp))
-                            Text(
-                                text = "Đánh giá của bạn",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                            RatingAndNoteSection(
+                                draftRating = draftRating,
+                                draftNote = draftNote,
+                                onRatingClick = { viewModel.setDraftRating(it) },
+                                onNoteChange = { viewModel.setDraftNote(it) },
+                                onSave = { viewModel.saveRatingAndNote() }
                             )
-                            Spacer(Modifier.height(10.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                (1..5).forEach { star ->
-                                    IconButton(
-                                        onClick = { viewModel.setDraftRating(star) },
-                                        modifier = Modifier.size(40.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Star,
-                                            contentDescription = "$star sao",
-                                            tint = if (draftRating != null && star <= draftRating)
-                                                CinemaGold
-                                            else
-                                                MaterialTheme.colorScheme.outline,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(Modifier.height(12.dp))
-                            OutlinedTextField(
-                                value = draftNote,
-                                onValueChange = { viewModel.setDraftNote(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Ghi chú của bạn") },
-                                placeholder = { Text("Cảm nhận về bộ phim...") },
-                                minLines = 2,
-                                maxLines = 4,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Button(
-                                onClick = { viewModel.saveRatingAndNote() },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Lưu đánh giá", fontWeight = FontWeight.SemiBold)
-                            }
                         }
 
                         // ── Diễn viên ─────────────────────────────
@@ -420,58 +385,6 @@ fun DetailScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun CastCard(cast: CastMember) {
-    Column(
-        modifier = Modifier.width(88.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (cast.profileUrl != null) {
-            AsyncImage(
-                model = cast.profileUrl,
-                contentDescription = cast.name,
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Surface(
-                modifier = Modifier.size(72.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = cast.name,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-        if (cast.character.isNotBlank()) {
-            Text(
-                text = cast.character,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }

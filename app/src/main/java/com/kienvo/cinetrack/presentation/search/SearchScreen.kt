@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kienvo.cinetrack.presentation.components.ErrorView
+import com.kienvo.cinetrack.presentation.components.MovieCard
 import com.kienvo.cinetrack.presentation.components.ShimmerMovieGrid
-import com.kienvo.cinetrack.presentation.home.MovieCard
 
 @Composable
 fun SearchScreen(
