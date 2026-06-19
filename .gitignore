@@ -14,4 +14,7 @@
 .cxx
 local.properties
 app/src/main/assets/secrets.properties
-ROADMAP.md
+
+# Bỏ qua mọi file Markdown, trừ README.md
+*.md
+!README.md

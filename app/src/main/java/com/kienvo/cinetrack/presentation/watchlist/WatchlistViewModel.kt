@@ -18,21 +18,31 @@ class WatchlistViewModel @Inject constructor(
     private val repository: MovieRepository
 ) : ViewModel() {
 
-    private val _selectedTab = MutableStateFlow(0) // 0 = muốn xem, 1 = đã xem
+    private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
     val wantToWatch: StateFlow<List<Movie>> = repository.getWantToWatch()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Danh sách "Đã xem" (Tương tự như wantToWatch)
     val watched: StateFlow<List<Movie>> = repository.getWatched()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Hành động người dùng chuyển Tab
+    private val _pendingDeleteMovie = MutableStateFlow<Movie?>(null)
+    val pendingDeleteMovie: StateFlow<Movie?> = _pendingDeleteMovie.asStateFlow()
+
     fun selectTab(index: Int) { _selectedTab.value = index }
 
-    // Xoá phim khỏi mọi danh sách
-    fun removeFromWatchlist(movie: Movie) {
+    fun softDelete(movie: Movie) {
+        _pendingDeleteMovie.value = movie
+    }
+
+    fun undoDelete() {
+        _pendingDeleteMovie.value = null
+    }
+
+    fun confirmDelete() {
+        val movie = _pendingDeleteMovie.value ?: return
+        _pendingDeleteMovie.value = null
         viewModelScope.launch { repository.removeFromWatchlist(movie) }
     }
 }

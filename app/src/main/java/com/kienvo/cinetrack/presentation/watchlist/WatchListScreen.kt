@@ -30,48 +30,74 @@ fun WatchlistScreen(
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val wantToWatch by viewModel.wantToWatch.collectAsStateWithLifecycle()
     val watched by viewModel.watched.collectAsStateWithLifecycle()
-    val tabs = listOf("Muốn xem", "Đã xem")
-    val currentList = if (selectedTab == 0) wantToWatch else watched
+    val pendingDeleteMovie by viewModel.pendingDeleteMovie.collectAsStateWithLifecycle()
 
-    Column(Modifier.fillMaxSize()) {
-        Text(
-            text = "Watchlist",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Khi có phim pending delete → show snackbar; kết quả quyết định undo hay confirm
+    LaunchedEffect(pendingDeleteMovie) {
+        val movie = pendingDeleteMovie ?: return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = "Đã xoá \"${movie.title}\"",
+            actionLabel = "Hoàn tác",
+            duration = SnackbarDuration.Short
         )
-
-        TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { viewModel.selectTab(index) },
-                    text = { Text(title) }
-                )
-            }
+        when (result) {
+            SnackbarResult.ActionPerformed -> viewModel.undoDelete()
+            SnackbarResult.Dismissed -> viewModel.confirmDelete()
         }
+    }
 
-        if (currentList.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = if (selectedTab == 0) "Chưa có phim muốn xem 🍿" else "Chưa có phim đã xem ✅",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(currentList, key = { it.id }) { movie ->
-                    WatchlistMovieCard(
-                        movie = movie,
-                        onClick = { onMovieClick(movie.id) },
-                        onDelete = { viewModel.removeFromWatchlist(movie) }
+    val tabs = listOf("Muốn xem", "Đã xem")
+    val currentList = (if (selectedTab == 0) wantToWatch else watched)
+        .filter { it.id != pendingDeleteMovie?.id }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            Text(
+                text = "Watchlist",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
+
+            TabRow(selectedTabIndex = selectedTab) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = { viewModel.selectTab(index) },
+                        text = { Text(title) }
                     )
                 }
             }
+
+            if (currentList.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (selectedTab == 0) "Chưa có phim muốn xem 🍿" else "Chưa có phim đã xem ✅",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(currentList, key = { it.id }) { movie ->
+                        WatchlistMovieCard(
+                            movie = movie,
+                            onClick = { onMovieClick(movie.id) },
+                            onDelete = { viewModel.softDelete(movie) }
+                        )
+                    }
+                }
+            }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -90,7 +116,6 @@ fun WatchlistMovieCard(
         )
     ) {
         Row(Modifier.padding(12.dp)) {
-            // Poster
             AsyncImage(
                 model = movie.fullPosterUrl(),
                 contentDescription = null,
@@ -103,7 +128,6 @@ fun WatchlistMovieCard(
 
             Spacer(Modifier.width(14.dp))
 
-            // Info
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -128,7 +152,6 @@ fun WatchlistMovieCard(
                     )
                 }
 
-                // Rating + Year row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -157,7 +180,6 @@ fun WatchlistMovieCard(
                 }
             }
 
-            // Delete button
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier.align(Alignment.CenterVertically)
