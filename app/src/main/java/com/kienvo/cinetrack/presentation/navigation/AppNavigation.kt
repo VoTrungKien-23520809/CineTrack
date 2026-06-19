@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.kienvo.cinetrack.presentation.detail.DetailScreen
@@ -27,9 +28,9 @@ fun AppNavigation(
     appViewModel: AppViewModel = hiltViewModel()
 ) {
     val startDestination = if (appViewModel.isLoggedIn) "home" else "login"
+    val isDarkTheme by appViewModel.isDarkTheme.collectAsStateWithLifecycle()
 
     val currentRoute by navController.currentBackStackEntryAsState()
-    // showBottomBar
     val showBottomBar = currentRoute?.destination?.route in
             listOf("home", "search", "watchlist", "profile")
 
@@ -49,7 +50,6 @@ fun AppNavigation(
                         icon = { Icon(Icons.Default.Home, null) },
                         label = { Text("Khám phá") }
                     )
-                    // NavigationBar — thêm item Search giữa Home và Watchlist
                     NavigationBarItem(
                         selected = currentRoute?.destination?.route == "search",
                         onClick = {
@@ -83,7 +83,6 @@ fun AppNavigation(
                         icon = { Icon(Icons.Default.Person, null) },
                         label = { Text("Hồ sơ") }
                     )
-
                 }
             }
         }
@@ -121,9 +120,11 @@ fun AppNavigation(
                 ProfileScreen(
                     onLogout = {
                         navController.navigate("login") {
-                            popUpTo(0) { inclusive = true } // clear toàn bộ backstack
+                            popUpTo(0) { inclusive = true }
                         }
-                    }
+                    },
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = { appViewModel.toggleTheme() }
                 )
             }
             composable("search") {

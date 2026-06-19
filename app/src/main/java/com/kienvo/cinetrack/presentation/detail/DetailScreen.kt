@@ -34,7 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.CastMember
 import com.kienvo.cinetrack.presentation.components.ErrorView
-import com.kienvo.cinetrack.presentation.components.LoadingView
+import com.kienvo.cinetrack.presentation.components.ShimmerDetailView
 import com.kienvo.cinetrack.presentation.home.MovieCard
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
@@ -55,7 +55,7 @@ fun DetailScreen(
     LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
     when {
-        uiState.isLoading -> LoadingView()
+        uiState.isLoading -> ShimmerDetailView()
         uiState.error != null -> ErrorView(
             message = "Lỗi: ${uiState.error}",
             onRetry = { viewModel.loadDetail(movieId) }

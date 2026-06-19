@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,7 +101,7 @@ fun WatchlistScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(currentList, key = { it.id }) { movie ->
-                        WatchlistMovieCard(
+                        SwipeableWatchlistCard(
                             movie = movie,
                             onClick = { onMovieClick(movie.id) },
                             onDelete = { viewModel.softDelete(movie) }
@@ -113,6 +115,44 @@ fun WatchlistScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeableWatchlistCard(
+    movie: Movie,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value != SwipeToDismissBoxValue.Settled) {
+                onDelete()
+                true
+            } else false
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(end = 8.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Xóa",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    ) {
+        WatchlistMovieCard(movie = movie, onClick = onClick, onDelete = onDelete)
     }
 }
 

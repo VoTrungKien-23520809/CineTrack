@@ -22,11 +22,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -47,10 +49,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kienvo.cinetrack.domain.model.Movie
 import com.kienvo.cinetrack.presentation.components.ErrorView
-import com.kienvo.cinetrack.presentation.components.LoadingView
+import com.kienvo.cinetrack.presentation.components.ShimmerMovieGrid
 import com.kienvo.cinetrack.ui.theme.CinemaGold
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onMovieClick: (Int) -> Unit,
@@ -88,17 +91,22 @@ fun HomeScreen(
         }
 
         when {
-            uiState.isLoading -> LoadingView()
+            uiState.isLoading -> ShimmerMovieGrid()
             uiState.error != null -> ErrorView(uiState.error!!, onRetry = { viewModel.loadMovies() })
             else -> {
                 val movies = if (selectedTab == 0) uiState.popularMovies else uiState.topRatedMovies
                 val isLoadingMore = if (selectedTab == 0) uiState.isLoadingMorePopular else uiState.isLoadingMoreTopRated
-                MovieGrid(
-                    movies = movies,
-                    onMovieClick = onMovieClick,
-                    isLoadingMore = isLoadingMore,
-                    state = gridState
-                )
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.refresh() }
+                ) {
+                    MovieGrid(
+                        movies = movies,
+                        onMovieClick = onMovieClick,
+                        isLoadingMore = isLoadingMore,
+                        state = gridState
+                    )
+                }
             }
         }
     }

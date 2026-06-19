@@ -107,4 +107,7 @@ dependencies {
 
     // Shimmer
     implementation("com.valentinilk.shimmer:compose-shimmer:1.3.0")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

@@ -50,6 +50,26 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun refresh() {
+        if (_uiState.value.isRefreshing) return
+        popularPage = 1
+        topRatedPage = 1
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            val popular = repository.getPopularMovies(1)
+            val topRated = repository.getTopRatedMovies(1)
+            val prevPopular = _uiState.value.popularMovies
+            val prevTopRated = _uiState.value.topRatedMovies
+            _uiState.update {
+                it.copy(
+                    isRefreshing = false,
+                    popularMovies = popular.getOrElse { prevPopular },
+                    topRatedMovies = topRated.getOrElse { prevTopRated }
+                )
+            }
+        }
+    }
+
     fun loadMorePopular() {
         if (_uiState.value.isLoadingMorePopular) return
         viewModelScope.launch {
@@ -83,6 +103,7 @@ class HomeViewModel @Inject constructor(
 
 data class HomeUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val popularMovies: List<Movie> = emptyList(),
     val topRatedMovies: List<Movie> = emptyList(),
     val isLoadingMorePopular: Boolean = false,
