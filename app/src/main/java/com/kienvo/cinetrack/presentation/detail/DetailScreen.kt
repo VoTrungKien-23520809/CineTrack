@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.kienvo.cinetrack.presentation.components.CastCard
 import com.kienvo.cinetrack.presentation.components.ErrorView
 import com.kienvo.cinetrack.presentation.components.MovieCard
@@ -52,6 +54,7 @@ fun DetailScreen(
     val context = LocalContext.current
     val draftRating = uiState.draftRating
     val draftNote = uiState.draftNote
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(movieId) { viewModel.loadDetail(movieId) }
 
@@ -263,7 +266,10 @@ fun DetailScreen(
                             // Watchlist button
                             val isInWatchlist = uiState.isInWatchlist
                             Button(
-                                onClick = { viewModel.toggleWatchlist() },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.toggleWatchlist()
+                                },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (isInWatchlist)
@@ -292,7 +298,10 @@ fun DetailScreen(
 
                             // Watched button
                             Button(
-                                onClick = { viewModel.toggleWatched() },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.toggleWatched()
+                                },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (uiState.isWatched)

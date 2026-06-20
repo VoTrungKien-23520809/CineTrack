@@ -8,10 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kienvo.cinetrack.R
+import com.kienvo.cinetrack.presentation.components.EmptyState
 import com.kienvo.cinetrack.presentation.components.SwipeableWatchlistCard
 
 @Composable
@@ -40,14 +43,17 @@ fun WatchlistScreen(
         }
     }
 
-    val tabs = listOf("Muốn xem", "Đã xem")
+    val tabs = listOf(
+        stringResource(R.string.tab_want_to_watch),
+        stringResource(R.string.tab_watched)
+    )
     val currentList = (if (selectedTab == 0) wantToWatch else watched)
         .filter { it.id != pendingDeleteMovie?.id }
 
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
             Text(
-                text = "Watchlist",
+                text = stringResource(R.string.watchlist_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp)
@@ -77,10 +83,17 @@ fun WatchlistScreen(
             }
 
             if (currentList.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = if (selectedTab == 0) "Chưa có phim muốn xem 🍿" else "Chưa có phim đã xem ✅",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                if (selectedTab == 0) {
+                    EmptyState(
+                        emoji    = "🍿",
+                        title    = stringResource(R.string.empty_want_title),
+                        subtitle = stringResource(R.string.empty_want_sub)
+                    )
+                } else {
+                    EmptyState(
+                        emoji    = "✅",
+                        title    = stringResource(R.string.empty_watched_title),
+                        subtitle = stringResource(R.string.empty_watched_sub)
                     )
                 }
             } else {

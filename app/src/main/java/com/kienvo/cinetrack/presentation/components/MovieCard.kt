@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,18 +48,19 @@ fun MovieCard(movie: Movie, onClick: () -> Unit) {
                 contentDescription = movie.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(Modifier.fillMaxWidth()),
+                    .aspectRatio(2f / 3f),
                 contentScale = ContentScale.Crop
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.85f)
+                                Color.Black.copy(alpha = 0.88f)
                             )
                         )
                     )

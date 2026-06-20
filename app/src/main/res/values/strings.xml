@@ -1,4 +1,56 @@
 <resources>
     <string name="app_name">CineTrack</string>
     <string name="default_web_client_id">215618826589-equ9n5c7m7kqapkr2p0k1njtfe3j8si2.apps.googleusercontent.com</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_explore">Explore</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_watchlist">Watchlist</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Home screen -->
+    <string name="tab_popular">Popular</string>
+    <string name="tab_top_rated">Top Rated</string>
+    <string name="section_recommended">Films Recommended For You</string>
+    <string name="section_recommended_sub">The hottest films right now</string>
+    <string name="section_top_rated">Highest Rated Films</string>
+    <string name="section_top_rated_sub">Most loved by audiences</string>
+
+    <!-- Search screen -->
+    <string name="search_hint">Search for films…</string>
+    <string name="search_empty_title">Search Films</string>
+    <string name="search_empty_sub">Type a film name to start exploring</string>
+    <string name="search_no_result_title">No results found</string>
+    <string name="search_no_result_sub">Try a different keyword</string>
+
+    <!-- Watchlist screen -->
+    <string name="watchlist_title">Watchlist</string>
+    <string name="tab_want_to_watch">Want to Watch</string>
+    <string name="tab_watched">Watched</string>
+    <string name="empty_want_title">No films to watch yet</string>
+    <string name="empty_want_sub">Add films to your watchlist to watch later</string>
+    <string name="empty_watched_title">No watched films yet</string>
+    <string name="empty_watched_sub">Mark a film as watched on its detail page</string>
+
+    <!-- Profile screen -->
+    <string name="profile_account">Account</string>
+    <string name="profile_login_method">Login Method</string>
+    <string name="profile_theme">Appearance</string>
+    <string name="profile_theme_dark">Dark</string>
+    <string name="profile_theme_light">Light</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_logout">Sign Out</string>
+    <string name="stat_want_to_watch">Want</string>
+    <string name="stat_watched">Watched</string>
+    <string name="stat_total">Total</string>
+
+    <!-- Language names -->
+    <string name="lang_en">English</string>
+    <string name="lang_vi">Tiếng Việt</string>
+    <string name="lang_fr">Français</string>
+
+    <!-- Snackbar / misc -->
+    <string name="deleted_movie">Deleted \"%s\"</string>
+    <string name="undo">Undo</string>
+    <string name="user_default">User</string>
 </resources>

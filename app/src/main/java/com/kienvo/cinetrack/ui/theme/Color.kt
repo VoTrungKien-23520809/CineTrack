@@ -19,3 +19,6 @@ val DarkSurface2  = Color(0xFF242424)   // elevated surface
 val OnDark        = Color(0xFFEEEEEE)   // text trên nền tối
 val OnDarkSecond  = Color(0xFF9E9E9E)   // text phụ
 val ErrorRed      = Color(0xFFCF6679)
+
+// Fonos-style
+val FonosOrange   = Color(0xFFFF6D00)   // cam đặc trưng Fonos

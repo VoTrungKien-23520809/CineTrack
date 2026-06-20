@@ -1,6 +1,8 @@
 package com.kienvo.cinetrack.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.res.stringResource
+import com.kienvo.cinetrack.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Home
@@ -29,6 +31,7 @@ fun AppNavigation(
 ) {
     val startDestination = if (appViewModel.isLoggedIn) "home" else "login"
     val isDarkTheme by appViewModel.isDarkTheme.collectAsStateWithLifecycle()
+    val currentLanguage by appViewModel.languageCode.collectAsStateWithLifecycle()
 
     val currentRoute by navController.currentBackStackEntryAsState()
     val showBottomBar = currentRoute?.destination?.route in
@@ -48,7 +51,7 @@ fun AppNavigation(
                             }
                         },
                         icon = { Icon(Icons.Default.Home, null) },
-                        label = { Text("Khám phá") }
+                        label = { Text(stringResource(R.string.nav_explore)) }
                     )
                     NavigationBarItem(
                         selected = currentRoute?.destination?.route == "search",
@@ -59,7 +62,7 @@ fun AppNavigation(
                             }
                         },
                         icon = { Icon(Icons.Default.Search, null) },
-                        label = { Text("Tìm kiếm") }
+                        label = { Text(stringResource(R.string.nav_search)) }
                     )
                     NavigationBarItem(
                         selected = currentRoute?.destination?.route == "watchlist",
@@ -70,7 +73,7 @@ fun AppNavigation(
                             }
                         },
                         icon = { Icon(Icons.Default.Bookmarks, null) },
-                        label = { Text("Watchlist") }
+                        label = { Text(stringResource(R.string.nav_watchlist)) }
                     )
                     NavigationBarItem(
                         selected = currentRoute?.destination?.route == "profile",
@@ -81,7 +84,7 @@ fun AppNavigation(
                             }
                         },
                         icon = { Icon(Icons.Default.Person, null) },
-                        label = { Text("Hồ sơ") }
+                        label = { Text(stringResource(R.string.nav_profile)) }
                     )
                 }
             }
@@ -90,7 +93,10 @@ fun AppNavigation(
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(padding)
+            // Chỉ apply bottom padding (navigation bar) — các màn hình tự handle top inset
+            modifier = Modifier.padding(
+                bottom = padding.calculateBottomPadding()
+            )
         ) {
             composable("login") {
                 LoginScreen(
@@ -102,7 +108,15 @@ fun AppNavigation(
                 )
             }
             composable("home") {
-                HomeScreen(onMovieClick = { navController.navigate("detail/$it") })
+                HomeScreen(
+                    onMovieClick = { navController.navigate("detail/$it") },
+                    onProfileClick = {
+                        navController.navigate("profile") {
+                            launchSingleTop = true
+                            popUpTo("home")
+                        }
+                    }
+                )
             }
             composable("watchlist") {
                 WatchlistScreen(onMovieClick = { navController.navigate("detail/$it") })
@@ -123,8 +137,10 @@ fun AppNavigation(
                             popUpTo(0) { inclusive = true }
                         }
                     },
-                    isDarkTheme = isDarkTheme,
-                    onToggleTheme = { appViewModel.toggleTheme() }
+                    isDarkTheme     = isDarkTheme,
+                    onToggleTheme   = { appViewModel.toggleTheme() },
+                    currentLanguage = currentLanguage,
+                    onLanguageChange = { appViewModel.setLanguage(it) }
                 )
             }
             composable("search") {

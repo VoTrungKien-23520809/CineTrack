@@ -110,4 +110,7 @@ dependencies {
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // AppCompat — for AppCompatDelegate.setApplicationLocales() on API 24+
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }

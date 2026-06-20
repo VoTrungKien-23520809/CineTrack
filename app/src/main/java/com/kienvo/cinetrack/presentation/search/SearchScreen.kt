@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kienvo.cinetrack.presentation.components.EmptyState
 import com.kienvo.cinetrack.presentation.components.ErrorView
 import com.kienvo.cinetrack.presentation.components.MovieCard
 import com.kienvo.cinetrack.presentation.components.ShimmerMovieGrid
@@ -42,7 +43,7 @@ fun SearchScreen(
         if (endReached) viewModel.loadMore()
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding()) {
         OutlinedTextField(
             value = query,
             onValueChange = { viewModel.onQueryChanged(it) },
@@ -63,29 +64,21 @@ fun SearchScreen(
         )
 
         when {
-            query.isBlank() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "🎬\nGõ tên phim để tìm kiếm",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+            query.isBlank() -> EmptyState(
+                emoji = "🎬",
+                title = "Tìm kiếm phim",
+                subtitle = "Gõ tên phim để bắt đầu khám phá"
+            )
             uiState.isLoading -> ShimmerMovieGrid()
             uiState.error != null -> ErrorView(
                 message = uiState.error!!,
                 onRetry = { viewModel.retry() }
             )
-            uiState.results.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "Không tìm thấy phim nào 😕",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            uiState.results.isEmpty() -> EmptyState(
+                emoji = "😕",
+                title = "Không tìm thấy kết quả",
+                subtitle = "Thử tìm với từ khoá khác nhé"
+            )
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),

@@ -6,12 +6,23 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.kienvo.cinetrack.domain.model.User
 import com.kienvo.cinetrack.domain.repository.AuthRepository
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth
 ) : AuthRepository {
+
+    override val currentUserFlow: Flow<User?> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            trySend(firebaseAuth.currentUser?.toDomain())
+        }
+        auth.addAuthStateListener(listener)
+        awaitClose { auth.removeAuthStateListener(listener) }
+    }
 
     override fun getCurrentUser(): User? = auth.currentUser?.toDomain()
     override fun isLoggedIn(): Boolean = auth.currentUser != null
